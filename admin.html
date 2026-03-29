@@ -58,7 +58,7 @@ let currentId = null;
 
 // 🔄 LOAD DATA
 function loadData() {
-    fetch("http://localhost:3000/appointments")
+    fetch("https://hospital-project-krnn.onrender.com/appointments")
     .then(res => res.json())
     .then(data => {
 
@@ -128,7 +128,7 @@ function updateData() {
         date: document.getElementById("editDate").value
     };
 
-    fetch(`http://localhost:3000/appointment/${currentId}`, {
+    fetch(`https://hospital-project-krnn.onrender.com/appointment/${currentId}`, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json"
@@ -143,7 +143,7 @@ function updateData() {
 
 // ❌ DELETE
 function deleteData(id) {
-    fetch(`http://localhost:3000/appointment/${id}`, {
+    fetch(`https://hospital-project-krnn.onrender.com/appointment/${id}`, {
         method: "DELETE"
     })
     .then(() => {

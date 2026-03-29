@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SmartCare Hospital</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<header class="navbar">
+    <h1>SmartCare Hospital</h1>
+    <nav>
+        <a href="#">Home</a>
+        <a href="#services">Services</a>
+        <a href="#doctors">Doctors</a>
+        <a href="#appointment">Appointment</a>
+    </nav>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-content">
+        <h2>Your Health, Our Priority</h2>
+        <p>Advanced healthcare with expert doctors</p>
+        <button onclick="scrollToForm()">Book Appointment</button>
+    </div>
+</section>
+
+<!-- SERVICES -->
+<section id="services">
+    <h2>Our Services</h2>
+    <div class="card-container">
+        <div class="card fade-in">❤️ <br> Cardiology</div>
+        <div class="card fade-in">🧠 <br> Neurology</div>
+        <div class="card fade-in">🦴 <br> Orthopedics</div>
+        <div class="card fade-in">🚑 <br> Emergency</div>
+    </div>
+</section>
+
+<!-- DOCTORS -->
+<section id="doctors">
+    <h2>Our Doctors</h2>
+    <div class="card-container">
+        <div class="card doctor">
+            <h3>Dr. Rakesh</h3>
+            <p>Cardiologist</p>
+        </div>
+        <div class="card doctor">
+            <h3>Dr. Priya</h3>
+            <p>Neurologist</p>
+        </div>
+    </div>
+</section>
+
+<!-- APPOINTMENT -->
+<section id="appointment">
+    <h2>Book Appointment</h2>
+
+    <!-- ✅ NO REFRESH FORM -->
+    <form id="appointmentForm" onsubmit="return false;">
+
+        <input type="text" id="name" placeholder="Your Name" required>
+        <input type="email" id="email" placeholder="Your Email" required>
+        <input type="date" id="date" required>
+
+        <!-- ✅ BUTTON FIXED -->
+        <button type="button" onclick="submitData()">Submit</button>
+
+    </form>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <p>© 2026 SmartCare Hospital</p>
+</footer>
+
+<!-- JS FILE -->
+<script src="script.js"></script>
+
+<!-- SCROLL FUNCTION -->
+<script>
+function scrollToForm(){
+    document.getElementById("appointment").scrollIntoView({behavior:"smooth"});
+}
+</script>
+
+</body>
+</html>

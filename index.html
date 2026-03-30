@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- 🔐 SESSION CHECK MUST BE HERE -->
+    <script>
+    if(localStorage.getItem("loggedIn") !== "true"){
+        window.location.href = "login.html";
+    }
+    </script>
+</head>
+
+<!-- NAVBAR -->
+<header class="navbar">
+    <h2>Admin Dashboard</h2>
+    <button onclick="logout()">Logout</button>
+</header>
+
+<div class="dashboard-box">
+
+<!-- 🔍 SEARCH -->
+<input type="text" id="search" placeholder="Search by name..." onkeyup="searchData()">
+
+<!-- ✏️ EDIT FORM -->
+<h3>Edit Appointment</h3>
+
+<input type="text" id="editName" placeholder="Name">
+<input type="email" id="editEmail" placeholder="Email">
+<input type="date" id="editDate">
+
+<button onclick="updateData()">Update</button>
+
+<!-- 📊 CHART -->
+<h3>Appointments Chart</h3>
+<canvas id="chart" width="400" height="200"></canvas>
+
+<!-- 📋 TABLE -->
+<table id="dataTable">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Date</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+</div>
+
+<script>
+let currentId = null;
+
+// 🔄 LOAD DATA
+function loadData() {
+    fetch("https://hospital-project-krnn.onrender.com/appointments")
+    .then(res => res.json())
+    .then(data => {
+
+        const table = document.querySelector("#dataTable tbody");
+        table.innerHTML = "";
+
+        let dates = [];
+
+        data.forEach(item => {
+
+            dates.push(item.date);
+
+            const row = `
+                <tr>
+                    <td>${item.name}</td>
+                    <td>${item.email}</td>
+                    <td>${item.date}</td>
+                    <td>
+                        <button onclick="editData('${item._id}', '${item.name}', '${item.email}', '${item.date}')">✏️</button>
+                        <button onclick="deleteData('${item._id}')">❌</button>
+                    </td>
+                </tr>
+            `;
+
+            table.innerHTML += row;
+        });
+
+        // 📊 CHART
+        new Chart(document.getElementById("chart"), {
+            type: "bar",
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: "Appointments",
+                    data: dates.map(() => 1)
+                }]
+            }
+        });
+
+    });
+}
+
+// 🔍 SEARCH
+function searchData() {
+    const input = document.getElementById("search").value.toLowerCase();
+    const rows = document.querySelectorAll("#dataTable tbody tr");
+
+    rows.forEach(row => {
+        const name = row.cells[0].innerText.toLowerCase();
+        row.style.display = name.includes(input) ? "" : "none";
+    });
+}
+
+// ✏️ EDIT
+function editData(id, name, email, date) {
+    document.getElementById("editName").value = name;
+    document.getElementById("editEmail").value = email;
+    document.getElementById("editDate").value = date;
+    currentId = id;
+}
+
+// 🔄 UPDATE
+function updateData() {
+    const updatedData = {
+        name: document.getElementById("editName").value,
+        email: document.getElementById("editEmail").value,
+        date: document.getElementById("editDate").value
+    };
+
+    fetch(`https://hospital-project-krnn.onrender.com/appointment/${currentId}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(updatedData)
+    })
+    .then(() => {
+        alert("Updated Successfully!");
+        loadData();
+    });
+}
+
+// ❌ DELETE
+function deleteData(id) {
+    fetch(`https://hospital-project-krnn.onrender.com/appointment/${id}`, {
+        method: "DELETE"
+    })
+    .then(() => {
+        alert("Deleted Successfully!");
+        loadData();
+    });
+}
+
+// 🔐 LOGOUT
+function logout(){
+    localStorage.removeItem("loggedIn");
+    window.location.href = "login.html";
+}
+
+// 🚀 LOAD
+window.onload = loadData;
+</script>
+
+</body>
+</html>

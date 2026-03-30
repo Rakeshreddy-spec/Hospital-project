@@ -1,36 +1,29 @@
 function submitData() {
+    const name = document.getElementById("name").value;
+    const email = document.getElementById("email").value;
+    const date = document.getElementById("date").value;
 
-    console.log("Form Submitted");
+    if (!name || !email || !date) {
+        alert("Please fill all fields");
+        return;
+    }
 
-    const data = {
-        name: document.getElementById("name").value,
-        email: document.getElementById("email").value,
-        date: document.getElementById("date").value
-    };
+    const appointmentData = { name, email, date };
 
-    console.log("Sending Data:", data);
-
-    fetch("http://localhost:3000/appointment", {
+    fetch("https://hospital-project-krnn.onrender.com/appointment", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(appointmentData)
     })
         .then(res => res.json())
-        .then(response => {
-            console.log("Server Response:", response);
-            alert("Appointment Saved!");
+        .then(data => {
+            alert("✅ Appointment Booked Successfully!");
+            document.getElementById("appointmentForm").reset();
         })
-        .catch(err => console.error("Error:", err));
+        .catch(err => {
+            console.error("Error:", err);
+            alert("❌ Failed to book appointment.");
+        });
 }
-
-// animation
-window.addEventListener("scroll", () => {
-    document.querySelectorAll(".fade-in").forEach(el => {
-        const top = el.getBoundingClientRect().top;
-        if (top < window.innerHeight - 50) {
-            el.classList.add("show");
-        }
-    });
-});

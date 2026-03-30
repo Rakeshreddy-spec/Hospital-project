@@ -1,88 +1,124 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>SmartCare Hospital</title>
-    <link rel="stylesheet" href="style.css">
+  <title>SmartCare Hospital</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #f4f6f8;
+      padding: 20px;
+    }
+    h1 {
+      color: #2c3e50;
+    }
+    form {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+    input, button {
+      padding: 10px;
+      margin: 5px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+    }
+    button {
+      background: #3498db;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .delete {
+      background: red;
+    }
+  </style>
 </head>
 <body>
 
-<!-- NAVBAR -->
-<header class="navbar">
-    <h1>SmartCare Hospital</h1>
-    <nav>
-        <a href="#">Home</a>
-        <a href="#services">Services</a>
-        <a href="#doctors">Doctors</a>
-        <a href="#appointment">Appointment</a>
-    </nav>
-</header>
+<h1>🏥 SmartCare Hospital</h1>
 
-<!-- HERO -->
-<section class="hero">
-    <div class="hero-content">
-        <h2>Your Health, Our Priority</h2>
-        <p>Advanced healthcare with expert doctors</p>
-        <button onclick="scrollToForm()">Book Appointment</button>
-    </div>
-</section>
+<form id="form">
+  <input type="text" id="name" placeholder="Patient Name" required>
+  <input type="email" id="email" placeholder="Email" required>
+  <input type="date" id="date" required>
+  <button type="submit">Add Appointment</button>
+</form>
 
-<!-- SERVICES -->
-<section id="services">
-    <h2>Our Services</h2>
-    <div class="card-container">
-        <div class="card fade-in">❤️ <br> Cardiology</div>
-        <div class="card fade-in">🧠 <br> Neurology</div>
-        <div class="card fade-in">🦴 <br> Orthopedics</div>
-        <div class="card fade-in">🚑 <br> Emergency</div>
-    </div>
-</section>
+<h2>Appointments</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Email</th>
+      <th>Date</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody id="tableBody"></tbody>
+</table>
 
-<!-- DOCTORS -->
-<section id="doctors">
-    <h2>Our Doctors</h2>
-    <div class="card-container">
-        <div class="card doctor">
-            <h3>Dr. Rakesh</h3>
-            <p>Cardiologist</p>
-        </div>
-        <div class="card doctor">
-            <h3>Dr. Priya</h3>
-            <p>Neurologist</p>
-        </div>
-    </div>
-</section>
-
-<!-- APPOINTMENT -->
-<section id="appointment">
-    <h2>Book Appointment</h2>
-
-    <!-- ✅ NO REFRESH FORM -->
-    <form id="appointmentForm" onsubmit="return false;">
-
-        <input type="text" id="name" placeholder="Your Name" required>
-        <input type="email" id="email" placeholder="Your Email" required>
-        <input type="date" id="date" required>
-
-        <!-- ✅ BUTTON FIXED -->
-        <button type="button" onclick="submitData()">Submit</button>
-
-    </form>
-</section>
-
-<!-- FOOTER -->
-<footer>
-    <p>© 2026 SmartCare Hospital</p>
-</footer>
-
-<!-- JS FILE -->
-<script src="script.js"></script>
-
-<!-- SCROLL FUNCTION -->
 <script>
-function scrollToForm(){
-    document.getElementById("appointment").scrollIntoView({behavior:"smooth"});
+const API = "https://hospital-project-krnn.onrender.com";
+
+// Load data
+async function loadData() {
+  const res = await fetch(API + "/appointments");
+  const data = await res.json();
+
+  const table = document.getElementById("tableBody");
+  table.innerHTML = "";
+
+  data.forEach(item => {
+    table.innerHTML += `
+      <tr>
+        <td>${item.name}</td>
+        <td>${item.email}</td>
+        <td>${item.date}</td>
+        <td>
+          <button class="delete" onclick="deleteData('${item._id}')">Delete</button>
+        </td>
+      </tr>
+    `;
+  });
 }
+
+// Add data
+document.getElementById("form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const data = {
+    name: document.getElementById("name").value,
+    email: document.getElementById("email").value,
+    date: document.getElementById("date").value
+  };
+
+  await fetch(API + "/appointments", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(data)
+  });
+
+  loadData();
+});
+
+// Delete data
+async function deleteData(id) {
+  await fetch(API + "/appointments/" + id, {
+    method: "DELETE"
+  });
+  loadData();
+}
+
+loadData();
 </script>
 
 </body>

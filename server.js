@@ -4,7 +4,8 @@ const path = require('path');
 const app = express();
 
 const PORT = process.env.PORT || 10000;
-// IMPORTANT: Replace the string below with your real MongoDB Atlas connection string
+
+// IMPORTANT: Replace this with your real string from MongoDB Atlas
 const MONGO_URI = 'YOUR_MONGODB_URI'; 
 
 // MongoDB Connection
@@ -30,7 +31,7 @@ app.use(express.static(path.join(__dirname, 'src', 'public')));
 
 // --- ROUTES ---
 
-// Staff Login Logic
+// Staff Login
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
     if (username === 'admin' && password === 'admin123') {
@@ -40,7 +41,7 @@ app.post('/login', (req, res) => {
     }
 });
 
-// Submit Appointment to MongoDB
+// Submit Appointment
 app.post('/submit-appointment', async (req, res) => {
     try {
         const newAppt = new Appointment(req.body);
@@ -52,7 +53,7 @@ app.post('/submit-appointment', async (req, res) => {
     }
 });
 
-// API: Get all appointments
+// API: Get all appointments for Admin Portal
 app.get('/api/appointments', async (req, res) => {
     try {
         const data = await Appointment.find().sort({ _id: -1 });
@@ -62,7 +63,7 @@ app.get('/api/appointments', async (req, res) => {
     }
 });
 
-// API: Update Doctor (Edit)
+// API: Update Doctor
 app.put('/api/appointments/:id', async (req, res) => {
     try {
         await Appointment.findByIdAndUpdate(req.params.id, { doctor: req.body.doctor });
@@ -73,7 +74,7 @@ app.put('/api/appointments/:id', async (req, res) => {
 });
 
 // API: Delete Appointment
-app.delete('/api/appointments/:id', async (req, res) => {
+app.delete('/api/appointments/:id', async (cite: 1, 2) res) => {
     try {
         await Appointment.findByIdAndDelete(req.params.id);
         res.json({ success: true });

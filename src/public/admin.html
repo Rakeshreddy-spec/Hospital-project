@@ -4,20 +4,19 @@
     <meta charset="UTF-8">
     <title>Staff Portal | CityCare</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body class="bg-gray-100 min-h-screen">
-    <nav class="bg-blue-900 text-white p-4 px-10 flex justify-between shadow-md">
-        <h1 class="font-bold text-xl tracking-wide">🏥 Staff Dashboard</h1>
+<body class="bg-gray-100 min-h-screen font-sans">
+    <nav class="bg-blue-900 text-white p-4 px-10 flex justify-between shadow-lg">
+        <h1 class="font-bold text-xl">🏥 Staff Dashboard</h1>
         <a href="/" class="hover:underline text-sm opacity-80">Logout</a>
     </nav>
 
     <div class="max-w-6xl mx-auto p-8">
-        <div class="bg-white rounded-xl shadow-lg border overflow-hidden">
+        <div class="bg-white rounded-xl shadow-md border overflow-hidden">
             <table class="w-full text-left">
                 <thead class="bg-gray-50 border-b">
-                    <tr class="text-gray-500 text-sm font-semibold uppercase">
-                        <th class="p-5">Patient</th>
+                    <tr class="text-gray-500 text-xs font-bold uppercase">
+                        <th class="p-5">Patient Details</th>
                         <th class="p-5">Dept</th>
                         <th class="p-5">Assigned Doctor</th>
                         <th class="p-5 text-center">Actions</th>
@@ -40,7 +39,7 @@
                     <td class="p-5 font-medium">${appt.name}<br><span class="text-xs text-gray-400">${appt.email}</span></td>
                     <td class="p-5 text-sm">${appt.department}</td>
                     <td class="p-5 font-semibold text-blue-600">${appt.doctor || 'Pending'}</td>
-                    <td class="p-5 text-center space-x-3">
+                    <td class="p-5 text-center space-x-4">
                         <button onclick="editDoc('${appt._id}')" class="text-blue-500 hover:text-blue-700 font-bold text-sm">Assign</button>
                         <button onclick="deleteAppt('${appt._id}')" class="text-red-500 hover:text-red-700 font-bold text-sm">Delete</button>
                     </td>
@@ -61,7 +60,7 @@
         }
 
         async function deleteAppt(id) {
-            if(confirm("Delete this record permanently?")) {
+            if(confirm("Permanently delete this record?")) {
                 await fetch(\`/api/appointments/\${id}\`, { method: 'DELETE' });
                 loadData();
             }

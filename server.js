@@ -1,49 +1,47 @@
 const express = require('express');
 const path = require('path');
 const app = express();
-
 const PORT = process.env.PORT || 10000;
 
-// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'src', 'public')));
 
-// Serve static files from src/public
-app.use(express.static(path.join(__dirname, 'src/public')));
-
-// In-memory Database
+// In-memory database with a "doctor" field
 let appointments = [
-    { name: "Sample Patient", email: "patient@example.com", date: "2026-04-10", department: "Cardiology" }
+    { name: "John Doe", email: "john@example.com", date: "2026-05-12", department: "Cardiology", doctor: "Smith" }
 ];
 
-// Routes
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'src/public/index.html'));
+    res.sendFile(path.join(__dirname, 'src', 'public', 'index.html'));
 });
 
-// Handle Appointment Submission
+// Create
 app.post('/submit-appointment', (req, res) => {
-    const { name, email, date, department } = req.body;
-    appointments.push({ name, email, date, department });
-
-    res.send(`
-        <script>
-            alert('Appointment Booked Successfully!');
-            window.location.href = '/index.html';
-        </script>
-    `);
+    const { name, email, date, department, doctor } = req.body;
+    appointments.push({ name, email, date, department, doctor: doctor || "Pending" });
+    res.send("<script>alert('Booked!'); window.location.href='/';</script>");
 });
 
-// Admin API to fetch appointments
-app.get('/api/appointments', (req, res) => {
-    res.json(appointments);
+// Read
+app.get('/api/appointments', (req, res) => res.json(appointments));
+
+// Update (Edit Doctor)
+app.put('/api/appointments/:id', (req, res) => {
+    const id = req.params.id;
+    if (appointments[id]) {
+        appointments[id].doctor = req.body.doctor;
+        res.json({ success: true });
+    } else {
+        res.status(404).send("Not found");
+    }
 });
 
-// Admin Login
-app.post('/login', (req, res) => {
-    res.redirect('/admin.html');
+// Delete
+app.delete('/api/appointments/:id', (req, res) => {
+    const id = req.params.id;
+    appointments.splice(id, 1);
+    res.json({ success: true });
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server live on ${PORT}`));

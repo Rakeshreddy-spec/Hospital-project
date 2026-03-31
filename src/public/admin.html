@@ -2,52 +2,78 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
+    <title>Admin Panel - Manage Appointments</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="/style.css">
 </head>
-<body class="bg-gray-100 min-h-screen">
-    <nav class="bg-slate-900 text-white p-4 shadow-lg flex justify-between px-10">
-        <h1 class="text-xl font-bold">🏥 CityCare Admin</h1>
-        <a href="/" class="opacity-70 hover:opacity-100">Logout</a>
+<body class="bg-gray-100">
+    <nav class="bg-blue-900 text-white p-4 shadow-lg flex justify-between px-10">
+        <h1 class="text-xl font-bold italic">🏥 CityCare Admin Console</h1>
+        <a href="/" class="opacity-70 hover:underline">Logout</a>
     </nav>
 
     <div class="max-w-6xl mx-auto p-8">
-        <h2 class="text-3xl font-bold mb-8 text-gray-800">Incoming Appointments</h2>
+        <h2 class="text-3xl font-bold mb-8 text-gray-800">Manage Patient Appointments</h2>
         
-        <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+        <div class="bg-white rounded-2xl shadow-sm overflow-hidden border">
             <table class="w-full text-left">
-                <thead class="bg-gray-50">
+                <thead class="bg-gray-50 border-b">
                     <tr class="text-gray-600 uppercase text-xs font-bold">
-                        <th class="p-4">Patient Name</th>
-                        <th class="p-4">Email</th>
+                        <th class="p-4">Patient</th>
+                        <th class="p-4">Doctor/Dept</th>
                         <th class="p-4">Date</th>
-                        <th class="p-4">Department</th>
+                        <th class="p-4 text-center">Actions</th>
                     </tr>
                 </thead>
-                <tbody id="appointment-list" class="divide-y divide-gray-100">
-                    <!-- Data will appear here -->
-                </tbody>
+                <tbody id="appointment-list"></tbody>
             </table>
         </div>
     </div>
 
     <script>
-        // Fetch appointments from our server
-        fetch('/api/appointments')
-            .then(res => res.json())
-            .then(data => {
-                const list = document.getElementById('appointment-list');
-                list.innerHTML = data.map(appt => `
-                    <tr class="hover:bg-blue-50 transition">
-                        <td class="p-4 font-semibold text-gray-700">${appt.name}</td>
-                        <td class="p-4 text-gray-500">${appt.email}</td>
-                        <td class="p-4 font-mono text-sm">${appt.date}</td>
-                        <td class="p-4"><span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">${appt.dept}</span></td>
-                    </tr>
-                `).join('');
-            });
+        function loadAppointments() {
+            fetch('/api/appointments')
+                .then(res => res.json())
+                .then(data => {
+                    const list = document.getElementById('appointment-list');
+                    list.innerHTML = data.map((appt, index) => `
+                        <tr class="hover:bg-blue-50 border-b last:border-0 transition">
+                            <td class="p-4">
+                                <div class="font-semibold text-gray-800">${appt.name}</div>
+                                <div class="text-xs text-gray-500">${appt.email}</div>
+                            </td>
+                            <td class="p-4">
+                                <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold block mb-1">Dr. ${appt.doctor || 'Unassigned'}</span>
+                                <span class="text-gray-400 text-xs">${appt.department}</span>
+                            </td>
+                            <td class="p-4 font-mono text-sm">${appt.date}</td>
+                            <td class="p-4 text-center space-x-2">
+                                <button onclick="editAppt(${index})" class="text-blue-600 hover:text-blue-800 text-sm font-bold">Edit</button>
+                                <button onclick="deleteAppt(${index})" class="text-red-600 hover:text-red-800 text-sm font-bold">Delete</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                });
+        }
+
+        function deleteAppt(index) {
+            if(confirm("Are you sure you want to delete this appointment?")) {
+                fetch(\`/api/appointments/\${index}\`, { method: 'DELETE' })
+                .then(() => loadAppointments());
+            }
+        }
+
+        function editAppt(index) {
+            const newDoctor = prompt("Enter Doctor Name:");
+            if (newDoctor) {
+                fetch(\`/api/appointments/\${index}\`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ doctor: newDoctor })
+                }).then(() => loadAppointments());
+            }
+        }
+
+        loadAppointments();
     </script>
 </body>
 </html>

@@ -4,14 +4,15 @@ const path = require('path');
 const app = express();
 
 const PORT = process.env.PORT || 10000;
-const MONGO_URI = 'YOUR_MONGODB_CONNECTION_STRING'; // PASTE YOUR LINK HERE
+// IMPORTANT: Replace the string below with your real MongoDB Atlas connection string
+const MONGO_URI = 'YOUR_MONGODB_URI'; 
 
-// 1. Connect to MongoDB
+// MongoDB Connection
 mongoose.connect(MONGO_URI)
-    .then(() => console.log("✅ Connected to MongoDB"))
+    .then(() => console.log("✅ MongoDB Connected Successfully"))
     .catch(err => console.error("❌ MongoDB Connection Error:", err));
 
-// 2. Define the Schema (How the data looks)
+// Appointment Schema
 const AppointmentSchema = new mongoose.Schema({
     name: String,
     email: String,
@@ -22,14 +23,14 @@ const AppointmentSchema = new mongoose.Schema({
 
 const Appointment = mongoose.model('Appointment', AppointmentSchema);
 
-// 3. Middleware
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'src', 'public')));
 
-// 4. Routes
+// --- ROUTES ---
 
-// Staff Login
+// Staff Login Logic
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
     if (username === 'admin' && password === 'admin123') {
@@ -39,33 +40,46 @@ app.post('/login', (req, res) => {
     }
 });
 
-// Create Appointment (Save to MongoDB)
+// Submit Appointment to MongoDB
 app.post('/submit-appointment', async (req, res) => {
     try {
         const newAppt = new Appointment(req.body);
         await newAppt.save();
         res.send("<script>alert('Booking Successful!'); window.location.href='/';</script>");
     } catch (err) {
+        console.error("Save Error:", err);
         res.status(500).send("Error saving to database");
     }
 });
 
-// Read Appointments (Get from MongoDB)
+// API: Get all appointments
 app.get('/api/appointments', async (req, res) => {
-    const data = await Appointment.find();
-    res.json(data);
+    try {
+        const data = await Appointment.find().sort({ _id: -1 });
+        res.json(data);
+    } catch (err) {
+        res.status(500).json({ error: "Failed to fetch data" });
+    }
 });
 
-// Update Doctor
+// API: Update Doctor (Edit)
 app.put('/api/appointments/:id', async (req, res) => {
-    await Appointment.findByIdAndUpdate(req.params.id, { doctor: req.body.doctor });
-    res.json({ success: true });
+    try {
+        await Appointment.findByIdAndUpdate(req.params.id, { doctor: req.body.doctor });
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).send("Update failed");
+    }
 });
 
-// Delete Appointment
+// API: Delete Appointment
 app.delete('/api/appointments/:id', async (req, res) => {
-    await Appointment.findByIdAndDelete(req.params.id);
-    res.json({ success: true });
+    try {
+        await Appointment.findByIdAndDelete(req.params.id);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).send("Delete failed");
+    }
 });
 
-app.listen(PORT, () => console.log(`Hospital Server active on ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server active on port ${PORT}`));

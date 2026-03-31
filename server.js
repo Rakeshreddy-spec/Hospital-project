@@ -1,56 +1,55 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const path = require('path');
 const app = express();
 
 const PORT = process.env.PORT || 10000;
 
-// FIX THIS: Ensure <password> is your DATABASE USER password
-const MONGO_URI = 'mongodb+srv://admin:<password>@cluster0.mongodb.net/hospital?retryWrites=true&w=majority'; 
-
-mongoose.connect(MONGO_URI)
-    .then(() => console.log("✅ MongoDB Connected"))
-    .catch(err => console.error("❌ Connection Error:", err));
-
-const Appointment = mongoose.model('Appointment', new mongoose.Schema({
-    name: String,
-    email: String,
-    date: String,
-    department: String,
-    doctor: { type: String, default: "Pending" }
-}));
+// IN-MEMORY DATABASE (Resets if server restarts)
+let appointments = [
+    { name: "Patient Alpha", email: "alpha@test.com", date: "2026-05-10", department: "Cardiology", doctor: "Dr. Smith" },
+    { name: "Patient Beta", email: "beta@test.com", date: "2026-05-12", department: "Neurology", doctor: "Pending" }
+];
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'src', 'public')));
 
-// --- CASE STUDY ATTACK ROUTE ---
-// This simulates a remote attacker poisoning the hospital data
-app.get('/poison-data', async (req, res) => {
-    try {
-        // Attack: Flip all medical departments to a malicious value
-        await Appointment.updateMany({}, { department: "⚠️ DATA CORRUPTED" });
-        res.send("<h1>Attack Successful: Federated Learning Node Poisoned!</h1>");
-    } catch (err) {
-        res.status(500).send("Attack failed: " + err.message);
+// --- THE ATTACK DEMONSTRATION ---
+// Route to simulate "Data Poisoning" remotely
+app.get('/poison-data-attack', (req, res) => {
+    // We simulate a hacker altering the hospital's local training data
+    appointments = appointments.map(appt => ({
+        ...appt,
+        department: "⚠️ DATA POISONED", // Label Flipping Attack
+        doctor: "MALICIOUS_NODE"
+    }));
+    
+    res.send(`
+        <div style="background:red; color:white; padding:50px; font-family:sans-serif; text-align:center;">
+            <h1>🚨 REMOTE ATTACK SUCCESSFUL 🚨</h1>
+            <p>Hospital Local Data has been poisoned. Federated Learning model will now be corrupted.</p>
+            <a href="/admin.html" style="color:yellow; font-weight:bold;">View Corrupted Staff Portal</a>
+        </div>
+    `);
+});
+
+// Normal Routes
+app.post('/login', (req, res) => {
+    const { username, password } = req.body;
+    if (username === 'admin' && password === 'admin123') {
+        res.redirect('/admin.html');
+    } else {
+        res.send("<script>alert('Invalid'); window.location.href='/login.html';</script>");
     }
 });
 
-app.post('/submit-appointment', async (req, res) => {
-    try {
-        const newAppt = new Appointment(req.body);
-        await newAppt.save();
-        res.send("<script>alert('Booking Successful!'); window.location.href='/';</script>");
-    } catch (err) {
-        // This is the error you are currently seeing
-        console.error(err);
-        res.status(500).send("Error saving to database: " + err.message);
-    }
+app.post('/submit-appointment', (req, res) => {
+    appointments.push({ ...req.body, doctor: "Pending" });
+    res.send("<script>alert('Booking Successful!'); window.location.href='/';</script>");
 });
 
-app.get('/api/appointments', async (req, res) => {
-    const data = await Appointment.find().sort({ _id: -1 });
-    res.json(data);
+app.get('/api/appointments', (req, res) => {
+    res.json(appointments);
 });
 
-app.listen(PORT, () => console.log(`Server on ${PORT}`));
+app.listen(PORT, () => console.log(`Hospital Node running on ${PORT}`));

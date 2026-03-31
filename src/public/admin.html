@@ -2,149 +2,72 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Staff Portal | CityCare Management</title>
+    <title>Staff Portal | CityCare</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body class="bg-slate-50 min-h-screen">
-
-    <nav class="bg-blue-900 text-white shadow-lg sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="flex items-center space-x-3">
-                <i class="fas fa-hospital-symbol text-2xl text-blue-300"></i>
-                <h1 class="text-xl font-bold tracking-tight">CityCare <span class="font-light">Staff Portal</span></h1>
-            </div>
-            <div class="flex items-center space-x-6">
-                <span class="text-blue-200 text-sm hidden md:block">Logged in as: <strong>Admin</strong></span>
-                <a href="/" class="bg-blue-800 hover:bg-red-600 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300">
-                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
-                </a>
-            </div>
-        </div>
+<body class="bg-gray-100 min-h-screen">
+    <nav class="bg-blue-900 text-white p-4 px-10 flex justify-between shadow-md">
+        <h1 class="font-bold text-xl tracking-wide">🏥 Staff Dashboard</h1>
+        <a href="/" class="hover:underline text-sm opacity-80">Logout</a>
     </nav>
 
-    <div class="max-w-7xl mx-auto px-6 py-10">
-        <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-            <div>
-                <h2 class="text-3xl font-extrabold text-slate-800">Appointment Management</h2>
-                <p class="text-slate-500 mt-1">Review, assign doctors, or manage patient requests.</p>
-            </div>
-            <button onclick="fetchAppointments()" class="flex items-center justify-center bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-xl shadow-sm hover:bg-slate-50 transition">
-                <i class="fas fa-sync-alt mr-2"></i> Refresh List
-            </button>
-        </div>
-
-        <div class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead class="bg-slate-50 border-b border-slate-200">
-                        <tr>
-                            <th class="p-5 text-xs font-bold text-slate-500 uppercase tracking-wider">Patient Details</th>
-                            <th class="p-5 text-xs font-bold text-slate-500 uppercase tracking-wider">Department</th>
-                            <th class="p-5 text-xs font-bold text-slate-500 uppercase tracking-wider">Assigned Doctor</th>
-                            <th class="p-5 text-xs font-bold text-slate-500 uppercase tracking-wider">Appointment Date</th>
-                            <th class="p-5 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="appointment-list" class="divide-y divide-slate-100">
-                        <tr>
-                            <td colspan="5" class="p-20 text-center">
-                                <div class="flex flex-col items-center">
-                                    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mb-4"></div>
-                                    <p class="text-slate-400">Fetching records from MongoDB...</p>
-                                </div>
-                            </td>
-                        </tr>
+    <div class="max-w-6xl mx-auto p-8">
+        <div class="bg-white rounded-xl shadow-lg border overflow-hidden">
+            <table class="w-full text-left">
+                <thead class="bg-gray-50 border-b">
+                    <tr class="text-gray-500 text-sm font-semibold uppercase">
+                        <th class="p-5">Patient</th>
+                        <th class="p-5">Dept</th>
+                        <th class="p-5">Assigned Doctor</th>
+                        <th class="p-5 text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="appt-table">
                     </tbody>
-                </table>
-            </div>
+            </table>
         </div>
     </div>
 
     <script>
-        // Load data from MongoDB via the server API
-        async function fetchAppointments() {
-            try {
-                const response = await fetch('/api/appointments');
-                const data = await response.json();
-                
-                const tbody = document.getElementById('appointment-list');
-                
-                if (data.length === 0) {
-                    tbody.innerHTML = `
-                        <tr>
-                            <td colspan="5" class="p-20 text-center">
-                                <i class="fas fa-folder-open text-4xl text-slate-200 mb-4 block"></i>
-                                <p class="text-slate-400 font-medium">No appointments found in the database.</p>
-                            </td>
-                        </tr>`;
-                    return;
-                }
-
-                tbody.innerHTML = data.map((appt) => `
-                    <tr class="hover:bg-blue-50/50 transition-colors duration-200">
-                        <td class="p-5">
-                            <div class="font-bold text-slate-800">${appt.name}</div>
-                            <div class="text-sm text-slate-500">${appt.email}</div>
-                        </td>
-                        <td class="p-5">
-                            <span class="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-bold">
-                                ${appt.department}
-                            </span>
-                        </td>
-                        <td class="p-5">
-                            <div class="flex items-center text-sm font-semibold ${appt.doctor === 'Pending' ? 'text-amber-600' : 'text-blue-700'}">
-                                <i class="fas fa-user-md mr-2 opacity-70"></i>
-                                ${appt.doctor || 'Pending'}
-                            </div>
-                        </td>
-                        <td class="p-5">
-                            <div class="text-sm font-mono text-slate-600 bg-slate-50 inline-block px-2 py-1 rounded">
-                                ${appt.date}
-                            </div>
-                        </td>
-                        <td class="p-5 text-center">
-                            <div class="flex items-center justify-center space-x-2">
-                                <button onclick="editDoctor('${appt._id}')" class="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition" title="Assign Doctor">
-                                    <i class="fas fa-edit"></i> Assign
-                                </button>
-                                <button onclick="deleteAppt('${appt._id}')" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition" title="Delete record">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `).join('');
-            } catch (err) {
-                console.error("Error loading data:", err);
-            }
+        async function loadData() {
+            const res = await fetch('/api/appointments');
+            const data = await res.json();
+            const tbody = document.getElementById('appt-table');
+            
+            tbody.innerHTML = data.map(appt => `
+                <tr class="border-b hover:bg-blue-50 transition">
+                    <td class="p-5 font-medium">${appt.name}<br><span class="text-xs text-gray-400">${appt.email}</span></td>
+                    <td class="p-5 text-sm">${appt.department}</td>
+                    <td class="p-5 font-semibold text-blue-600">${appt.doctor || 'Pending'}</td>
+                    <td class="p-5 text-center space-x-3">
+                        <button onclick="editDoc('${appt._id}')" class="text-blue-500 hover:text-blue-700 font-bold text-sm">Assign</button>
+                        <button onclick="deleteAppt('${appt._id}')" class="text-red-500 hover:text-red-700 font-bold text-sm">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
         }
 
-        // Logic to Edit/Assign a Doctor using MongoDB ID
-        async function editDoctor(id) {
-            const docName = prompt("Enter the name of the Doctor to assign:");
-            if (docName) {
-                const response = await fetch(\`/api/appointments/\${id}\`, {
+        async function editDoc(id) {
+            const name = prompt("Enter Doctor Name:");
+            if(name) {
+                await fetch(\`/api/appointments/\${id}\`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ doctor: docName })
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ doctor: name })
                 });
-                
-                if(response.ok) fetchAppointments();
+                loadData();
             }
         }
 
-        // Logic to Delete a record using MongoDB ID
         async function deleteAppt(id) {
-            if (confirm("Are you sure you want to permanently delete this appointment from MongoDB?")) {
-                const response = await fetch(\`/api/appointments/\${id}\`, { method: 'DELETE' });
-                if(response.ok) fetchAppointments();
+            if(confirm("Delete this record permanently?")) {
+                await fetch(\`/api/appointments/\${id}\`, { method: 'DELETE' });
+                loadData();
             }
         }
 
-        // Run fetch on page load
-        window.onload = fetchAppointments;
+        loadData();
     </script>
 </body>
 </html>

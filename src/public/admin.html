@@ -2,24 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Staff Portal | CityCare</title>
+    <title>Staff Portal | Case Study Demo</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 min-h-screen font-sans">
+<body class="bg-slate-50 min-h-screen">
     <nav class="bg-blue-900 text-white p-4 px-10 flex justify-between shadow-lg">
-        <h1 class="font-bold text-xl">🏥 Staff Dashboard</h1>
+        <h1 class="font-bold text-xl">🏥 Hospital AI Node - Staff Portal</h1>
         <a href="/" class="hover:underline text-sm opacity-80">Logout</a>
     </nav>
 
     <div class="max-w-6xl mx-auto p-8">
+        <div class="mb-6 bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4" role="alert">
+            <p class="font-bold">Federated Learning Status:</p>
+            <p>This node is currently collecting local patient data for global model training.</p>
+        </div>
+
         <div class="bg-white rounded-xl shadow-md border overflow-hidden">
             <table class="w-full text-left">
                 <thead class="bg-gray-50 border-b">
                     <tr class="text-gray-500 text-xs font-bold uppercase">
-                        <th class="p-5">Patient Details</th>
-                        <th class="p-5">Dept</th>
+                        <th class="p-5">Patient Name</th>
+                        <th class="p-5">Department (Label)</th>
                         <th class="p-5">Assigned Doctor</th>
-                        <th class="p-5 text-center">Actions</th>
+                        <th class="p-5">Date</th>
                     </tr>
                 </thead>
                 <tbody id="appt-table">
@@ -30,42 +35,38 @@
 
     <script>
         async function loadData() {
-            const res = await fetch('/api/appointments');
-            const data = await res.json();
-            const tbody = document.getElementById('appt-table');
-            
-            tbody.innerHTML = data.map(appt => `
-                <tr class="border-b hover:bg-blue-50 transition">
-                    <td class="p-5 font-medium">${appt.name}<br><span class="text-xs text-gray-400">${appt.email}</span></td>
-                    <td class="p-5 text-sm">${appt.department}</td>
-                    <td class="p-5 font-semibold text-blue-600">${appt.doctor || 'Pending'}</td>
-                    <td class="p-5 text-center space-x-4">
-                        <button onclick="editDoc('${appt._id}')" class="text-blue-500 hover:text-blue-700 font-bold text-sm">Assign</button>
-                        <button onclick="deleteAppt('${appt._id}')" class="text-red-500 hover:text-red-700 font-bold text-sm">Delete</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
+            try {
+                const res = await fetch('/api/appointments');
+                const data = await res.json();
+                const tbody = document.getElementById('appt-table');
+                
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="p-10 text-center text-gray-400">No data found. Please book an appointment first.</td></tr>';
+                    return;
+                }
 
-        async function editDoc(id) {
-            const name = prompt("Enter Doctor Name:");
-            if(name) {
-                await fetch(\`/api/appointments/\${id}\`, {
-                    method: 'PUT',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ doctor: name })
-                });
-                loadData();
+                tbody.innerHTML = data.map(appt => {
+                    // Check if data is poisoned for visual effect
+                    const isPoisoned = appt.department.includes("POISONED");
+                    return `
+                    <tr class="border-b ${isPoisoned ? 'bg-red-50' : 'hover:bg-blue-50'} transition">
+                        <td class="p-5 font-medium">${appt.name}</td>
+                        <td class="p-5">
+                            <span class="${isPoisoned ? 'text-red-600 font-bold animate-pulse' : 'text-gray-700'}">
+                                ${appt.department}
+                            </span>
+                        </td>
+                        <td class="p-5">${appt.doctor}</td>
+                        <td class="p-5 text-gray-500 text-sm">${appt.date}</td>
+                    </tr>
+                `}).join('');
+            } catch (err) {
+                console.error("Fetch error:", err);
             }
         }
 
-        async function deleteAppt(id) {
-            if(confirm("Permanently delete this record?")) {
-                await fetch(\`/api/appointments/\${id}\`, { method: 'DELETE' });
-                loadData();
-            }
-        }
-
+        // Auto-refresh every 3 seconds to show the attack happening live
+        setInterval(loadData, 3000);
         loadData();
     </script>
 </body>
